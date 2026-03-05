@@ -1,0 +1,228 @@
+Last login: Tue Mar  3 22:15:59 on ttys005
+annachekryshova@MacBookPro my-app % cd my-app
+cd: no such file or directory: my-app
+annachekryshova@MacBookPro my-app % npm install openai
+
+up to date, audited 362 packages in 836ms
+
+144 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+annachekryshova@MacBookPro my-app % touch .env.local                           
+annachekryshova@MacBookPro my-app % open .env.local
+
+No application knows how to open URL file:///Users/annachekryshova/photoos-ai/my-app/.env.local (Error Domain=NSOSStatusErrorDomain Code=-10814 "kLSApplicationNotFoundErr: E.g. no application claims the file" UserInfo={_LSLine=1973, _LSFunction=runEvaluator, _LSFile=LSBindingEvaluator.mm, _LSErrorMessage=kLSApplicationNotFoundErr}).
+annachekryshova@MacBookPro my-app % open -a TextEdit .env.local
+
+annachekryshova@MacBookPro my-app % open -a TextEdit .env.local
+annachekryshova@MacBookPro my-app % npm run dev
+
+
+> my-app@0.1.0 dev
+> next dev
+
+⚠ Port 3000 is in use by process 37010, using available port 3001 instead.
+▲ Next.js 16.1.6 (Turbopack)
+- Local:         http://localhost:3001
+- Network:       http://192.168.1.115:3001
+- Environments: .env.local
+
+✓ Starting...
+⨯ Unable to acquire lock at /Users/annachekryshova/photoos-ai/my-app/.next/dev/lock, is another instance of next dev running?
+  Suggestion: If you intended to restart next dev, terminate the other process, and then try again.
+
+annachekryshova@MacBookPro my-app % ls src/app/api/analyze
+
+ls: src/app/api/analyze: No such file or directory
+annachekryshova@MacBookPro my-app % mkdir -p src/app/api/analyze
+
+annachekryshova@MacBookPro my-app % touch src/app/api/analyze/route.js
+
+annachekryshova@MacBookPro my-app % open -a TextEdit src/app/api/analyze/route.js
+
+annachekryshova@MacBookPro my-app % ls src/app/api/analyze
+route.js
+annachekryshova@MacBookPro my-app % open -a TextEdit src/app/page.tsx
+The file /Users/annachekryshova/photoos-ai/my-app/src/app/page.tsx does not exist.
+annachekryshova@MacBookPro my-app % ls src/app
+
+api
+annachekryshova@MacBookPro my-app % touch src/app/page.js
+annachekryshova@MacBookPro my-app % open -a TextEdit src/app/page.js
+annachekryshova@MacBookPro my-app % >....                                       
+    const res = await fetch("/api/analyze", {
+      method: "POST",                      
+      headers: {                           
+        "Content-Type": "application/json",
+      },                             
+      body: JSON.stringify({ text }),
+    });
+    
+    const data = await res.json();       
+    setResult(data.result || data.error);
+    setLoading(false);
+  }
+  
+  return (                                                 
+    <main style={{ padding: 40, fontFamily: "system-ui" }}>
+      <h1>PhotoOS AI</h1>
+      
+      <textarea                                  
+        rows={8}                                 
+        style={{ width: "100%", marginTop: 20 }} 
+        placeholder="Paste client message..."    
+        value={text}                             
+                                                 
+zsh: parse error near `}'
+annachekryshova@MacBookPro my-app % Ctrl + C
+
+zsh: command not found: Ctrl
+annachekryshova@MacBookPro my-app % npm run dev
+
+
+> my-app@0.1.0 dev
+> next dev
+
+⚠ Port 3000 is in use by process 37010, using available port 3001 instead.
+▲ Next.js 16.1.6 (Turbopack)
+- Local:         http://localhost:3001
+- Network:       http://192.168.1.115:3001
+- Environments: .env.local
+
+✓ Starting...
+⨯ Unable to acquire lock at /Users/annachekryshova/photoos-ai/my-app/.next/dev/lock, is another instance of next dev running?
+  Suggestion: If you intended to restart next dev, terminate the other process, and then try again.
+
+annachekryshova@MacBookPro my-app % ls
+README.md		next.config.ts		postcss.config.mjs
+app			node_modules		public
+eslint.config.mjs	package-lock.json	src
+next-env.d.ts		package.json		tsconfig.json
+annachekryshova@MacBookPro my-app % >....                                       
+
+> my-app@0.1.0 dev
+> next dev
+
+⚠ Port 3000 is in use by process 37010, using available port 3001 instead.
+▲ Next.js 16.1.6 (Turbopack)
+- Local:         http://localhost:3001
+- Network:       http://192.168.1.115:3001
+- Environments: .env.local
+
+✓ Starting...
+⨯ Unable to acquire lock at /Users/annachekryshova/photoos-ai/my-app/.next/dev/lock, is another instance of next dev running?
+  Suggestion: If you intended to restart next dev, terminate the other process, and then try again.
+
+annachekryshova@MacBookPro my-app % ls
+README.md               next.config.ts          postcss.config.mjs
+app                     node_modules            public
+eslint.config.mjs       package-lock.json       src
+next-env.d.ts           package.json            tsconfig.json
+annachekryshova@MacBookPro my-app %
+
+zsh: command not found: annachekryshova@MacBookPro
+zsh: command not found: dev
+zsh: command not found: dev
+zsh: command not found: ⚠
+zsh: missing delimiter for 'u' glob qualifier
+zsh: command not found: Local:
+zsh: command not found: Network:
+zsh: command not found: Environments:
+zsh: command not found: ✓
+zsh: no matches found: running?
+zsh: command not found: Suggestion:
+zsh: command not found: annachekryshova@MacBookPro
+zsh: command not found: README.md
+zsh: command not found: app
+zsh: command not found: eslint.config.mjs
+zsh: command not found: next-env.d.ts
+zsh: command not found: annachekryshova@MacBookPro
+annachekryshova@MacBookPro my-app % kill -9 37010
+
+annachekryshova@MacBookPro my-app % kill -9 37010
+
+kill: kill 37010 failed: no such process
+annachekryshova@MacBookPro my-app % kill -9 37010
+open -a TextEdit app/page.tsx
+kill: kill 37010 failed: no such process
+annachekryshova@MacBookPro my-app % npm run dev
+
+> my-app@0.1.0 dev
+> next dev
+
+▲ Next.js 16.1.6 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.1.129:3000
+- Environments: .env.local
+
+✓ Starting...
+✓ Ready in 953ms
+ GET / 200 in 679ms (compile: 586ms, render: 93ms)
+ POST /api/analyze 404 in 111ms (compile: 76ms, render: 35ms)
+ GET / 200 in 55ms (compile: 13ms, render: 42ms)
+ POST /api/analyze 404 in 56ms (compile: 7ms, render: 48ms)
+ GET / 200 in 131ms (compile: 61ms, render: 70ms)
+ GET / 200 in 129ms (compile: 77ms, render: 52ms)
+ GET / 200 in 45ms (compile: 11ms, render: 33ms)
+ GET / 200 in 56ms (compile: 12ms, render: 43ms)
+ GET / 200 in 46ms (compile: 10ms, render: 36ms)
+ GET / 200 in 39ms (compile: 2ms, render: 37ms)
+ GET / 200 in 27ms (compile: 6ms, render: 22ms)
+ GET / 200 in 14ms (compile: 1735µs, render: 12ms)
+ GET / 200 in 76ms (compile: 4ms, render: 72ms)
+
+  [Restored 4. Mar 2026 at 20:22:30]
+Last login: Wed Mar  4 20:22:23 on console
+Restored session: Wed Mar  4 20:21:35 EET 2026
+annachekryshova@MacBookPro my-app % npm run dev
+
+> my-app@0.1.0 dev
+> next dev
+
+▲ Next.js 16.1.6 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.1.129:3000
+- Environments: .env.local
+
+✓ Starting...
+✓ Ready in 924ms
+ GET / 200 in 475ms (compile: 374ms, render: 101ms)
+ POST /api/analyze 500 in 3.4s (compile: 510ms, render: 2.9s)
+pkill -f "next dev" || true
+
+pkill -f "next dev" || true
+
+
+annachekryshova@MacBookPro my-app % pkill -f "next dev" || true
+annachekryshova@MacBookPro my-app % 
+annachekryshova@MacBookPro my-app % pkill -f "next dev" || true
+annachekryshova@MacBookPro my-app % 
+annachekryshova@MacBookPro my-app % pkill -f "next dev" || true
+
+annachekryshova@MacBookPro my-app % nano app/api/analyze/route.js
+
+  UW PICO 5.09             File: app/api/analyze/route.js             Modified  
+
+      ],
+    });
+         
+    return Response.json({
+      result: response.choices[0].message.content,
+    });   
+         
+  } catch (error) {
+    return Response.json(
+      {
+        error: "Server error",
+        details: String(error.message),
+      },
+      { status: 500 }
+    );
+  }
+}penai";
+
+export async function POST(req) {
+
+^G Get Help  ^O WriteOut  ^R Read File ^Y Prev Pg   ^K Cut Text  ^C Cur Pos   
+^X Exit      ^J Justify   ^W Where is  ^V Next Pg   ^U UnCut Text^T To Spell  

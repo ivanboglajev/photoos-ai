@@ -1,65 +1,165 @@
-import Image from "next/image";
+
+"use client";
+
+import { useState } from "react";
 
 export default function Home() {
+  const [text, setText] = useState("");
+
+  // Photographer profile fields (Step 4)
+  const [city, setCity] = useState("Tallinn / Cork");
+  const [style, setStyle] = useState("Warm documentary family photography, natural light, no stiff posing");
+  const [price, setPrice] = useState("200€/hour");
+  const [tone, setTone] = useState("Calm, confident, warm, human. Short sentences. No pushy sales.");
+  const [languageMode, setLanguageMode] = useState("auto"); // auto / ru / en
+
+  const [result, setResult] = useState<any>(null);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function analyze() {
+    setLoading(true);
+    setResult(null);
+    setError("");
+
+    try {
+      const res = await fetch("/api/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text,
+          photographer: { city, style, price, tone, languageMode },
+        }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.details || data?.error || `HTTP ${res.status}`);
+
+      setResult(data);
+    } catch (e: any) {
+      setError(e.message || "Unknown error");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <main style={{ maxWidth: 980, margin: "40px auto", padding: 16, fontFamily: "system-ui" }}>
+      <h1 style={{ fontSize: 28, fontWeight: 700 }}>PhotoOS AI — Sales Brain</h1>
+      <p style={{ opacity: 0.8 }}>
+        Paste a client message → get objection, risk, and ready-to-send replies. Now personalized to your voice.
+      </p>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 16 }}>
+        <div>
+          <label style={{ fontWeight: 600 }}>City / Market</label>
+          <input
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            style={{ width: "100%", marginTop: 6, padding: 10, borderRadius: 10, border: "1px solid #ccc" }}
+          />
+        </div>
+
+        <div>
+          <label style={{ fontWeight: 600 }}>Price (text)</label>
+          <input
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            style={{ width: "100%", marginTop: 6, padding: 10, borderRadius: 10, border: "1px solid #ccc" }}
+          />
+        </div>
+
+        <div style={{ gridColumn: "1 / -1" }}>
+          <label style={{ fontWeight: 600 }}>Style</label>
+          <input
+            value={style}
+            onChange={(e) => setStyle(e.target.value)}
+            style={{ width: "100%", marginTop: 6, padding: 10, borderRadius: 10, border: "1px solid #ccc" }}
+          />
+        </div>
+
+        <div style={{ gridColumn: "1 / -1" }}>
+          <label style={{ fontWeight: 600 }}>Tone rules</label>
+          <textarea
+            value={tone}
+            onChange={(e) => setTone(e.target.value)}
+            rows={3}
+            style={{ width: "100%", marginTop: 6, padding: 10, borderRadius: 10, border: "1px solid #ccc" }}
+          />
+        </div>
+
+        <div>
+          <label style={{ fontWeight: 600 }}>Language</label>
+          <select
+            value={languageMode}
+            onChange={(e) => setLanguageMode(e.target.value)}
+            style={{ width: "100%", marginTop: 6, padding: 10, borderRadius: 10, border: "1px solid #ccc" }}
+          >
+            <option value="auto">Auto (same as client)</option>
+            <option value="ru">Russian</option>
+            <option value="en">English</option>
+          </select>
+        </div>
+      </div>
+
+      <div style={{ marginTop: 16 }}>
+        <label style={{ fontWeight: 600 }}>Client message</label>
+        <textarea
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          rows={8}
+          placeholder='Example: "We love your photos but the price feels a bit high. Any smaller option?"'
+          style={{ width: "100%", marginTop: 6, padding: 12, borderRadius: 10, border: "1px solid #ccc" }}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+      </div>
+
+      <div style={{ display: "flex", gap: 12, marginTop: 12 }}>
+        <button
+          onClick={analyze}
+          disabled={loading || text.trim().length < 2}
+          style={{ padding: "10px 14px", borderRadius: 10, border: "1px solid #ccc", cursor: "pointer" }}
+        >
+          {loading ? "Analyzing..." : "Analyze"}
+        </button>
+
+        <button
+          onClick={() => { setText(""); setResult(null); setError(""); }}
+          style={{ padding: "10px 14px", borderRadius: 10, border: "1px solid #ccc", cursor: "pointer" }}
+        >
+          Clear
+        </button>
+      </div>
+
+      {error && (
+        <div style={{ marginTop: 16, padding: 12, borderRadius: 10, background: "#ffecec" }}>
+          <b>Error:</b> {error}
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      )}
+
+      {result && (
+        <div style={{ marginTop: 16, padding: 14, borderRadius: 12, border: "1px solid #ddd" }}>
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+            <span><b>Objection:</b> {result.objection_type}</span>
+            <span><b>Risk:</b> {result.risk}</span>
+          </div>
+
+          <hr style={{ margin: "12px 0" }} />
+
+          <div><b>Insight:</b><br />{result.insight}</div>
+          <br />
+          <div><b>Reply (short):</b><br />{result.reply_short}</div>
+          <br />
+          <div><b>Reply (long):</b><br />{result.reply_long}</div>
+          <br />
+          <div><b>Upsell:</b><br />{result.upsell}</div>
+
+          <hr style={{ margin: "12px 0" }} />
+          <details>
+            <summary>Raw JSON</summary>
+            <pre style={{ whiteSpace: "pre-wrap" }}>{JSON.stringify(result, null, 2)}</pre>
+          </details>
         </div>
-      </main>
-    </div>
+      )}
+    </main>
   );
 }
