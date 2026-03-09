@@ -1,7 +1,6 @@
-
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export default function Home() {
   const [mode, setMode] = useState("sales");
@@ -16,49 +15,6 @@ export default function Home() {
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
-  const [savedReplies, setSavedReplies] = useState<any[]>([]);
-
-  useEffect(() => {
-    const raw = localStorage.getItem("photoos_saved_replies");
-    if (raw) {
-      try {
-        setSavedReplies(JSON.parse(raw));
-      } catch {
-        setSavedReplies([]);
-      }
-    }
-  }, []);
-
-  function persistReplies(nextReplies: any[]) {
-    setSavedReplies(nextReplies);
-    localStorage.setItem("photoos_saved_replies", JSON.stringify(nextReplies));
-  }
-
-  function saveCurrentReply() {
-    if (!result || mode !== "sales") return;
-
-    const item = {
-      id: Date.now(),
-      savedAt: new Date().toLocaleString(),
-      sourceText: text,
-      objection_type: result.objection_type,
-      tone: result.tone,
-      strategy: result.strategy,
-      risk: result.risk,
-      reply_short: result.reply_short,
-      reply_long: result.reply_long,
-      insight: result.insight,
-    };
-
-    const nextReplies = [item, ...savedReplies];
-    persistReplies(nextReplies);
-  }
-
-  function deleteSavedReply(id: number) {
-    const nextReplies = savedReplies.filter((item) => item.id !== id);
-    persistReplies(nextReplies);
-  }
 
   async function analyze() {
     setLoading(true);
@@ -87,10 +43,10 @@ export default function Home() {
   }
 
   return (
-    <main style={{ maxWidth: 1100, margin: "40px auto", padding: 16, fontFamily: "system-ui" }}>
+    <main style={{ maxWidth: 980, margin: "40px auto", padding: 16, fontFamily: "system-ui" }}>
       <h1 style={{ fontSize: 28, fontWeight: 700 }}>PhotoOS AI</h1>
       <p style={{ opacity: 0.8 }}>
-        Sales Brain + Client Insight for photographers.
+        Sales Brain + Client Insight + Concept Generator + Session Flow + Shot List.
       </p>
 
       <div style={{ marginTop: 16 }}>
@@ -102,6 +58,9 @@ export default function Home() {
         >
           <option value="sales">Sales Brain</option>
           <option value="insight">Client Insight</option>
+          <option value="concept">Concept Generator</option>
+          <option value="flow">Session Flow</option>
+          <option value="shotlist">Shot List</option>
         </select>
       </div>
 
@@ -159,8 +118,17 @@ export default function Home() {
 
       <div style={{ marginTop: 16 }}>
         <label style={{ fontWeight: 600 }}>
-          {mode === "sales" ? "Client message" : "Client profile / notes"}
+          {mode === "sales"
+            ? "Client message"
+            : mode === "insight"
+            ? "Client profile / notes"
+            : mode === "concept"
+            ? "Concept brief"
+            : mode === "flow"
+            ? "Session flow brief"
+            : "Shot list brief"}
         </label>
+
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
@@ -168,7 +136,13 @@ export default function Home() {
           placeholder={
             mode === "sales"
               ? 'Example: "We love your photos but the price feels a bit high. Any smaller option?"'
-              : 'Example: "young family, 2 kids, dog, loves nature, shy child, casual style"'
+              : mode === "insight"
+              ? 'Example: "young family, 2 kids, dog, loves nature, shy child, casual style"'
+              : mode === "concept"
+              ? 'Example: "young family, shy child, dog, autumn, home session, wants natural photos"'
+              : mode === "flow"
+              ? 'Example: "young family, shy child, dog, home session, child needs time to warm up"'
+              : 'Example: "young family, shy child, dog, home session, natural documentary session"'
           }
           style={{ width: "100%", marginTop: 6, padding: 12, borderRadius: 10, border: "1px solid #ccc" }}
         />
@@ -193,15 +167,6 @@ export default function Home() {
         >
           Clear
         </button>
-
-        {mode === "sales" && result && (
-          <button
-            onClick={saveCurrentReply}
-            style={{ padding: "10px 14px", borderRadius: 10, border: "1px solid #ccc", cursor: "pointer" }}
-          >
-            Save Reply
-          </button>
-        )}
       </div>
 
       {error && (
@@ -218,9 +183,7 @@ export default function Home() {
             <span><b>Strategy:</b> {result.strategy}</span>
             <span><b>Risk:</b> {result.risk}</span>
           </div>
-
           <hr style={{ margin: "12px 0" }} />
-
           <div><b>Insight:</b><br />{result.insight}</div>
           <br />
           <div><b>Reply (short):</b><br />{result.reply_short}</div>
@@ -237,9 +200,7 @@ export default function Home() {
             <span><b>Client type:</b> {result.client_type}</span>
             <span><b>Risk:</b> {result.risk}</span>
           </div>
-
           <hr style={{ margin: "12px 0" }} />
-
           <div><b>Shoot style:</b><br />{result.shoot_style}</div>
           <br />
           <div><b>Location idea:</b><br />{result.location_idea}</div>
@@ -250,51 +211,57 @@ export default function Home() {
         </div>
       )}
 
-      {mode === "sales" && (
-        <div style={{ marginTop: 24 }}>
-          <h2 style={{ fontSize: 22, marginBottom: 12 }}>Saved Replies</h2>
+      {result && mode === "concept" && (
+        <div style={{ marginTop: 16, padding: 14, borderRadius: 12, border: "1px solid #ddd" }}>
+          <div><b>Concept name:</b><br />{result.concept_name}</div>
+          <br />
+          <div><b>Visual direction:</b><br />{result.visual_direction}</div>
+          <br />
+          <div><b>Best time:</b><br />{result.best_time}</div>
+          <br />
+          <div><b>Movement prompt:</b><br />{result.movement_prompt}</div>
+          <br />
+          <div><b>Emotion focus:</b><br />{result.emotion_focus}</div>
+          <br />
+          <div><b>Framing plan:</b><br />{result.framing_plan}</div>
+          <br />
+          <div><b>Shot priority:</b><br />{result.shot_priority}</div>
+          <br />
+          <div><b>Detail focus:</b><br />{result.detail_focus}</div>
+          <br />
+          <div><b>Backup if low energy:</b><br />{result.backup_if_low_energy}</div>
+        </div>
+      )}
 
-          {savedReplies.length === 0 ? (
-            <div style={{ padding: 14, borderRadius: 12, border: "1px solid #ddd", opacity: 0.7 }}>
-              No saved replies yet.
-            </div>
-          ) : (
-            <div style={{ display: "grid", gap: 12 }}>
-              {savedReplies.map((item) => (
-                <div
-                  key={item.id}
-                  style={{ padding: 14, borderRadius: 12, border: "1px solid #ddd" }}
-                >
-                  <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
-                    <span><b>Objection:</b> {item.objection_type}</span>
-                    <span><b>Tone:</b> {item.tone}</span>
-                    <span><b>Strategy:</b> {item.strategy}</span>
-                    <span><b>Risk:</b> {item.risk}</span>
-                    <span style={{ opacity: 0.7 }}><b>Saved:</b> {item.savedAt}</span>
-                  </div>
+      {result && mode === "flow" && (
+        <div style={{ marginTop: 16, padding: 14, borderRadius: 12, border: "1px solid #ddd" }}>
+          <div><b>First 5 minutes:</b><br />{result.first_5_minutes}</div>
+          <br />
+          <div><b>Opening phrase:</b><br />{result.opening_phrase}</div>
+          <br />
+          <div><b>Middle flow:</b><br />{result.middle_flow}</div>
+          <br />
+          <div><b>Energy shift:</b><br />{result.energy_shift}</div>
+          <br />
+          <div><b>Closing moment:</b><br />{result.closing_moment}</div>
+          <br />
+          <div><b>If child refuses:</b><br />{result.if_child_refuses}</div>
+        </div>
+      )}
 
-                  <hr style={{ margin: "12px 0" }} />
-
-                  <div><b>Client message:</b><br />{item.sourceText}</div>
-                  <br />
-                  <div><b>Insight:</b><br />{item.insight}</div>
-                  <br />
-                  <div><b>Reply (short):</b><br />{item.reply_short}</div>
-                  <br />
-                  <div><b>Reply (long):</b><br />{item.reply_long}</div>
-
-                  <div style={{ marginTop: 12 }}>
-                    <button
-                      onClick={() => deleteSavedReply(item.id)}
-                      style={{ padding: "8px 12px", borderRadius: 10, border: "1px solid #ccc", cursor: "pointer" }}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+      {result && mode === "shotlist" && (
+        <div style={{ marginTop: 16, padding: 14, borderRadius: 12, border: "1px solid #ddd" }}>
+          <div><b>Must-have frames:</b><br />{result.must_have_frames}</div>
+          <br />
+          <div><b>First frame:</b><br />{result.first_frame}</div>
+          <br />
+          <div><b>Safe frame:</b><br />{result.safe_frame}</div>
+          <br />
+          <div><b>Emotion frame:</b><br />{result.emotion_frame}</div>
+          <br />
+          <div><b>Detail frame:</b><br />{result.detail_frame}</div>
+          <br />
+          <div><b>Frame to try last:</b><br />{result.frame_to_try_last}</div>
         </div>
       )}
     </main>

@@ -1,4 +1,3 @@
-
 import OpenAI from "openai";
 
 export const runtime = "nodejs";
@@ -15,7 +14,8 @@ export async function POST(req) {
     const price = String(photographer.price ?? "");
     const toneRules = String(photographer.tone ?? "Warm, confident, human.");
     const languageMode = String(photographer.languageMode ?? "auto");
-const personalVoice = `
+
+    const personalVoice = `
 The photographer speaks like a calm father-photographer.
 Warm, grounded, calm, self-respecting.
 No fake enthusiasm.
@@ -102,6 +102,176 @@ Rules:
           {
             role: "user",
             content: `Client profile / notes:\n${text}`,
+          },
+        ],
+      });
+
+      const content = completion.choices?.[0]?.message?.content ?? "{}";
+      return Response.json(JSON.parse(content));
+    }
+
+    if (mode === "concept") {
+      const completion = await client.chat.completions.create({
+        model: "gpt-4.1-mini",
+        temperature: 0.35,
+        response_format: { type: "json_object" },
+        messages: [
+          {
+            role: "system",
+            content: `
+You are "PhotoOS AI — Concept Generator" for photographers.
+
+Photographer profile:
+- City/market: ${city}
+- Style: ${style}
+- Typical price: ${price}
+- Tone rules: ${toneRules}
+
+Photographer personal voice:
+${personalVoice}
+
+Language rule:
+- ${languageRule}
+
+Return STRICT JSON with exactly these keys:
+- concept_name
+- visual_direction
+- best_time
+- movement_prompt
+- emotion_focus
+- framing_plan
+- shot_priority
+- detail_focus
+- backup_if_low_energy
+
+Rules:
+- Build a realistic concept for a real family or client, not a fantasy moodboard.
+- Prioritize natural movement, emotional truth, and documentary feeling.
+- Do not over-prioritize cleanliness, perfection, or stiff structure.
+- If the session is at home, treat lived-in details as part of the story.
+- "best_time" should be practical, not poetic.
+- "movement_prompt" should be something the photographer can actually say or guide.
+- "framing_plan" = practical framing progression (wide / medium / close).
+- "shot_priority" = what should be captured first.
+- "detail_focus" = small documentary details worth noticing.
+- "backup_if_low_energy" should help if the child, family, or couple loses energy.
+- Keep it specific, warm, and useful.
+- No markdown. No extra keys.
+            `.trim(),
+          },
+          {
+            role: "user",
+            content: `Concept brief:\n${text}`,
+          },
+        ],
+      });
+
+      const content = completion.choices?.[0]?.message?.content ?? "{}";
+      return Response.json(JSON.parse(content));
+    }
+
+    if (mode === "flow") {
+      const completion = await client.chat.completions.create({
+        model: "gpt-4.1-mini",
+        temperature: 0.35,
+        response_format: { type: "json_object" },
+        messages: [
+          {
+            role: "system",
+            content: `
+You are "PhotoOS AI — Session Flow" for photographers.
+
+Photographer profile:
+- City/market: ${city}
+- Style: ${style}
+- Typical price: ${price}
+- Tone rules: ${toneRules}
+
+Photographer personal voice:
+${personalVoice}
+
+Language rule:
+- ${languageRule}
+
+Return STRICT JSON with exactly these keys:
+- first_5_minutes
+- opening_phrase
+- middle_flow
+- energy_shift
+- closing_moment
+- if_child_refuses
+
+Rules:
+- Think like a real documentary family photographer.
+- Keep flow realistic and calm.
+- Avoid stiff posing.
+- Opening phrase must sound human and natural.
+- Energy shift = what to do if attention drops.
+- If child refuses = no forcing, no pressure.
+- Keep all answers practical.
+- No markdown. No extra keys.
+            `.trim(),
+          },
+          {
+            role: "user",
+            content: `Session brief:\n${text}`,
+          },
+        ],
+      });
+
+      const content = completion.choices?.[0]?.message?.content ?? "{}";
+      return Response.json(JSON.parse(content));
+    }
+
+    if (mode === "shotlist") {
+      const completion = await client.chat.completions.create({
+        model: "gpt-4.1-mini",
+        temperature: 0.35,
+        response_format: { type: "json_object" },
+        messages: [
+          {
+            role: "system",
+            content: `
+You are "PhotoOS AI — Shot List" for photographers.
+
+Photographer profile:
+- City/market: ${city}
+- Style: ${style}
+- Typical price: ${price}
+- Tone rules: ${toneRules}
+
+Photographer personal voice:
+${personalVoice}
+
+Language rule:
+- ${languageRule}
+
+Return STRICT JSON with exactly these keys:
+- - must_have_frames = 3 short numbered must-have frames only
+- first_frame
+- safe_frame
+- emotion_frame
+- detail_frame
+- frame_to_try_last
+
+Rules:
+- Think like a real documentary family photographer building a realistic shot priority.
+- must_have_frames = the essential visual core of the session.
+- first_frame = easiest natural opening frame.
+- safe_frame = reliable frame to secure early.
+- emotion_frame = frame with strongest emotional potential.
+- detail_frame = small lived-in documentary detail.
+- frame_to_try_last = more delicate frame when trust is already built.
+- Keep it practical, not abstract.
+- No markdown. No extra keys.
+- Separate multiple ideas clearly using numbered sentences.
+- Each field must read cleanly and not merge ideas together.
+- Use short structured phrases.
+            `.trim(),
+          },
+          {
+            role: "user",
+            content: `Shot list brief:\n${text}`,
           },
         ],
       });
