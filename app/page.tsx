@@ -36,7 +36,9 @@ export default function Home() {
           photographer: { city, style, price, tone, languageMode },
         }),
       });
-
+function copyText(value: string) {
+  navigator.clipboard.writeText(value);
+}
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data?.details || data?.error || `HTTP ${res.status}`);
       setResult(data);
@@ -271,11 +273,62 @@ export default function Home() {
 
           <div><b>Insight</b><br />{result.insight}</div>
           <br />
-          <div><b>Reply (short)</b><br />{result.reply_short}</div>
+          <div>
+  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+    <b>Reply (short)</b>
+    <button
+      onClick={() => copyText(result.reply_short)}
+      style={{
+        border: "none",
+        background: "#f3f1ed",
+        borderRadius: 8,
+        padding: "6px 10px",
+        cursor: "pointer",
+      }}
+    >
+      Copy
+    </button>
+  </div>
+  <div style={{ marginTop: 6 }}>{result.reply_short}</div>
+</div>
           <br />
-          <div><b>Reply (long)</b><br />{result.reply_long}</div>
+          <div>
+  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+    <b>Reply (long)</b>
+    <button
+      onClick={() => copyText(result.reply_long)}
+      style={{
+        border: "none",
+        background: "#f3f1ed",
+        borderRadius: 8,
+        padding: "6px 10px",
+        cursor: "pointer",
+      }}
+    >
+      Copy
+    </button>
+  </div>
+  <div style={{ marginTop: 6 }}>{result.reply_long}</div>
+</div>
           <br />
-          <div><b>Upsell</b><br />{result.upsell}</div>
+          <div>
+  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+    <b>Upsell</b>
+    <button
+      onClick={() => copyText(result.upsell)}
+      style={{
+        border: "none",
+        background: "#f3f1ed",
+        borderRadius: 8,
+        padding: "6px 10px",
+        cursor: "pointer",
+      }}
+    >
+      Copy
+    </button>
+  </div>
+  <div style={{ marginTop: 6 }}>{result.upsell}</div>
+</div>
         </div>
       )}
 
