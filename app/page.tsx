@@ -44,10 +44,10 @@ export default function Home() {
 
   return (
     <main style={{ maxWidth: 980, margin: "40px auto", padding: 16, fontFamily: "system-ui" }}>
-      <h1 style={{ fontSize: 28, fontWeight: 700 }}>PhotoOS AI</h1>
-      <p style={{ opacity: 0.8 }}>
-        Sales Brain + Client Insight + Concept Generator + Session Flow + Shot List.
-      </p>
+     <h1 style={{ fontSize: 28, fontWeight: 700 }}>PhotoOS — AI assistant for photographers</h1>
+<p style={{ opacity: 0.8 }}>
+  Understand clients. Prepare shoots. Protect your energy.
+</p>
 
       <div style={{ marginTop: 16 }}>
         <label style={{ fontWeight: 600 }}>Mode</label>
@@ -56,11 +56,9 @@ export default function Home() {
           onChange={(e) => setMode(e.target.value)}
           style={{ display: "block", marginTop: 6, padding: 10, borderRadius: 10, border: "1px solid #ccc" }}
         >
-          <option value="sales">Sales Brain</option>
-          <option value="insight">Client Insight</option>
-          <option value="concept">Concept Generator</option>
-          <option value="flow">Session Flow</option>
-          <option value="shotlist">Shot List</option>
+         <option value="sales">Sales Brain</option>
+<option value="concept">Concept Generator</option>
+<option value="shotlist">Shot List</option>
         </select>
       </div>
 
@@ -119,14 +117,10 @@ export default function Home() {
       <div style={{ marginTop: 16 }}>
         <label style={{ fontWeight: 600 }}>
           {mode === "sales"
-            ? "Client message"
-            : mode === "insight"
-            ? "Client profile / notes"
-            : mode === "concept"
-            ? "Concept brief"
-            : mode === "flow"
-            ? "Session flow brief"
-            : "Shot list brief"}
+  ? "Client message"
+  : mode === "concept"
+  ? "Concept brief"
+  : "Shot list brief"}
         </label>
 
         <textarea
@@ -135,14 +129,10 @@ export default function Home() {
           rows={8}
           placeholder={
             mode === "sales"
-              ? 'Example: "We love your photos but the price feels a bit high. Any smaller option?"'
-              : mode === "insight"
-              ? 'Example: "young family, 2 kids, dog, loves nature, shy child, casual style"'
-              : mode === "concept"
-              ? 'Example: "young family, shy child, dog, autumn, home session, wants natural photos"'
-              : mode === "flow"
-              ? 'Example: "young family, shy child, dog, home session, child needs time to warm up"'
-              : 'Example: "young family, shy child, dog, home session, natural documentary session"'
+  ? 'Example: "We love your photos but the price feels a bit high. Any smaller option?"'
+  : mode === "concept"
+  ? 'Example: "young family, shy child, dog, autumn, home session, wants natural photos"'
+  : 'Example: "young family, shy child, dog, home session, natural documentary session"'
           }
           style={{ width: "100%", marginTop: 6, padding: 12, borderRadius: 10, border: "1px solid #ccc" }}
         />
