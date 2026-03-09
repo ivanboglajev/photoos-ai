@@ -4,7 +4,7 @@
 import { useState } from "react";
 
 export default function Home() {
-  const [mode, setMode] = useState("sales");
+  const [mode, setMode] = useState<"sales" | "insight" | "concept" | "flow" | "shotlist">("sales");
   const [text, setText] = useState("");
 const [copiedKey, setCopiedKey] = useState("");
 
@@ -45,7 +45,7 @@ const [tone, setTone] = useState("");
   }
 
 function copyText(key: string, value: string) {
-    if (!value) return;
+  if (!value || typeof navigator === "undefined" || !navigator.clipboard) return;
 
   navigator.clipboard.writeText(value);
   setCopiedKey(key);
@@ -73,6 +73,16 @@ function copyText(key: string, value: string) {
     background: "white",
     boxShadow: "0 4px 20px rgba(0,0,0,0.04)",
   };
+const modes: {
+  key: "sales" | "insight" | "concept" | "flow" | "shotlist";
+  label: string;
+}[] = [
+  { key: "sales", label: "Sales Brain" },
+  { key: "insight", label: "Client Insight" },
+  { key: "concept", label: "Concept Generator" },
+  { key: "flow", label: "Session Flow" },
+  { key: "shotlist", label: "Shot List" },
+];
 
   return (
     <main
@@ -128,13 +138,13 @@ function copyText(key: string, value: string) {
               border: "1px solid #e6e2dc",
             }}
           >
-            {[
-              { key: "sales", label: "Sales Brain" },
-              { key: "insight", label: "Client Insight" },
-              { key: "concept", label: "Concept Generator" },
-              { key: "flow", label: "Session Flow" },
-              { key: "shotlist", label: "Shot List" },
-            ].map((item) => (
+          {[
+  { key: "sales", label: "Sales Brain" },
+  { key: "insight", label: "Client Insight" },
+  { key: "concept", label: "Concept Generator" },
+  { key: "flow", label: "Session Flow" },
+  { key: "shotlist", label: "Shot List" },
+].map((item) => (
               <button
                 key={item.key}
                 type="button"
