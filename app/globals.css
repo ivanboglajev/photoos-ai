@@ -17,3 +17,8 @@ select,
 button {
   font: inherit;
 }
+
+input::placeholder,
+textarea::placeholder {
+  color: #9b948b;
+}

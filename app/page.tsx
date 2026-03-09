@@ -6,22 +6,19 @@ import { useState } from "react";
 export default function Home() {
   const [mode, setMode] = useState("sales");
   const [text, setText] = useState("");
+const [copiedKey, setCopiedKey] = useState("");
 
-  const [city, setCity] = useState("Tallinn / Cork");
-  const [style, setStyle] = useState(
-    "Warm documentary family photography, natural light, no stiff posing"
-  );
-  const [price, setPrice] = useState("200€/hour");
-  const [tone, setTone] = useState(
-    "Calm, confident, warm, human. Short sentences. No pushy sales."
-  );
+  const [city, setCity] = useState("");
+const [style, setStyle] = useState("");
+const [price, setPrice] = useState("");
+const [tone, setTone] = useState("");
   const [languageMode, setLanguageMode] = useState("auto");
 
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function analyze() {
+    async function analyze() {
     setLoading(true);
     setResult(null);
     setError("");
@@ -36,9 +33,7 @@ export default function Home() {
           photographer: { city, style, price, tone, languageMode },
         }),
       });
-function copyText(value: string) {
-  navigator.clipboard.writeText(value);
-}
+
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data?.details || data?.error || `HTTP ${res.status}`);
       setResult(data);
@@ -49,6 +44,16 @@ function copyText(value: string) {
     }
   }
 
+function copyText(key: string, value: string) {
+    if (!value) return;
+
+  navigator.clipboard.writeText(value);
+  setCopiedKey(key);
+
+  setTimeout(() => {
+    setCopiedKey((current) => (current === key ? "" : current));
+  }, 1500);
+}
   const fieldStyle = {
     width: "100%",
     marginTop: 6,
@@ -160,22 +165,43 @@ function copyText(value: string) {
         >
           <div>
             <label style={{ fontWeight: 600, color: "#2a2a2a" }}>Market</label>
-            <input value={city} onChange={(e) => setCity(e.target.value)} style={fieldStyle} />
+            <input
+  value={city}
+  onChange={(e) => setCity(e.target.value)}
+  placeholder="city, country or target audience"
+  style={fieldStyle}
+/>
           </div>
 
           <div>
             <label style={{ fontWeight: 600, color: "#2a2a2a" }}>Price</label>
-            <input value={price} onChange={(e) => setPrice(e.target.value)} style={fieldStyle} />
+            <input
+  value={price}
+  onChange={(e) => setPrice(e.target.value)}
+  placeholder="price per session / hour"
+  style={fieldStyle}
+/>
           </div>
 
           <div style={{ gridColumn: "1 / -1" }}>
             <label style={{ fontWeight: 600, color: "#2a2a2a" }}>Style</label>
-            <input value={style} onChange={(e) => setStyle(e.target.value)} style={fieldStyle} />
+            <input
+  value={style}
+  onChange={(e) => setStyle(e.target.value)}
+  placeholder="natural, editorial, documentary, studio..."
+  style={fieldStyle}
+/>
           </div>
 
           <div style={{ gridColumn: "1 / -1" }}>
             <label style={{ fontWeight: 600, color: "#2a2a2a" }}>Tone rules</label>
-            <textarea value={tone} onChange={(e) => setTone(e.target.value)} rows={3} style={fieldStyle} />
+            <textarea
+  value={tone}
+  onChange={(e) => setTone(e.target.value)}
+  rows={3}
+  placeholder="friendly, direct, emotional, minimal..."
+  style={fieldStyle}
+/>
           </div>
 
           <div>
@@ -201,16 +227,26 @@ function copyText(value: string) {
               : "Shot list brief"}
           </label>
 
-          <textarea
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            rows={8}
-            placeholder="Write your input here..."
-            style={{
-              ...fieldStyle,
-              padding: 12,
-            }}
-          />
+  <textarea
+  value={text}
+  onChange={(e) => setText(e.target.value)}
+  rows={8}
+  placeholder={
+    mode === "sales"
+      ? "paste a client message"
+      : mode === "insight"
+      ? "describe the client or session briefly"
+      : mode === "concept"
+      ? "describe the shoot idea or family situation"
+      : mode === "flow"
+      ? "describe the session flow challenge"
+      : "describe the session for shot priorities"
+  }
+  style={{
+    ...fieldStyle,
+    padding: 12,
+  }}
+/>
         </div>
 
         <div style={{ display: "flex", gap: 12, marginTop: 12 }}>
@@ -263,74 +299,80 @@ function copyText(value: string) {
       )}
 
       {result && mode === "sales" && (
-        <div style={cardStyle}>
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 12 }}>
-            <span><b>Objection:</b> {result.objection_type}</span>
-            <span><b>Tone:</b> {result.tone}</span>
-            <span><b>Strategy:</b> {result.strategy}</span>
-            <span><b>Risk:</b> {result.risk}</span>
-          </div>
+  <div style={cardStyle}>
+    <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 12 }}>
+      <span><b>Objection:</b> {result.objection_type}</span>
+      <span><b>Tone:</b> {result.tone}</span>
+      <span><b>Strategy:</b> {result.strategy}</span>
+      <span><b>Risk:</b> {result.risk}</span>
+    </div>
 
-          <div><b>Insight</b><br />{result.insight}</div>
-          <br />
-          <div>
-  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-    <b>Reply (short)</b>
-    <button
-      onClick={() => copyText(result.reply_short)}
-      style={{
-        border: "none",
-        background: "#f3f1ed",
-        borderRadius: 8,
-        padding: "6px 10px",
-        cursor: "pointer",
-      }}
-    >
-      Copy
-    </button>
+    <div><b>Insight</b><br />{result.insight}</div>
+
+    <br />
+
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <b>Reply (short)</b>
+        <button
+          onClick={() => copyText("reply_short", result.reply_short)}
+          style={{
+            border: "none",
+            background: "#f3f1ed",
+            borderRadius: 8,
+            padding: "6px 10px",
+            cursor: "pointer",
+          }}
+        >
+          {copiedKey === "reply_short" ? "Copied" : "Copy"}
+        </button>
+      </div>
+      <div style={{ marginTop: 6 }}>{result.reply_short}</div>
+    </div>
+
+    <br />
+
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <b>Reply (long)</b>
+        <button
+          onClick={() => copyText("reply_long", result.reply_long)}
+          style={{
+            border: "none",
+            background: "#f3f1ed",
+            borderRadius: 8,
+            padding: "6px 10px",
+            cursor: "pointer",
+          }}
+        >
+          {copiedKey === "reply_long" ? "Copied" : "Copy"}
+        </button>
+      </div>
+      <div style={{ marginTop: 6 }}>{result.reply_long}</div>
+    </div>
+
+    <br />
+
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <b>Upsell</b>
+        <button
+          onClick={() => copyText("upsell", result.upsell)}
+          style={{
+            border: "none",
+            background: "#f3f1ed",
+            borderRadius: 8,
+            padding: "6px 10px",
+            cursor: "pointer",
+          }}
+        >
+          {copiedKey === "upsell" ? "Copied" : "Copy"}
+        </button>
+      </div>
+      <div style={{ marginTop: 6 }}>{result.upsell}</div>
+    </div>
   </div>
-  <div style={{ marginTop: 6 }}>{result.reply_short}</div>
-</div>
-          <br />
-          <div>
-  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-    <b>Reply (long)</b>
-    <button
-      onClick={() => copyText(result.reply_long)}
-      style={{
-        border: "none",
-        background: "#f3f1ed",
-        borderRadius: 8,
-        padding: "6px 10px",
-        cursor: "pointer",
-      }}
-    >
-      Copy
-    </button>
-  </div>
-  <div style={{ marginTop: 6 }}>{result.reply_long}</div>
-</div>
-          <br />
-          <div>
-  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-    <b>Upsell</b>
-    <button
-      onClick={() => copyText(result.upsell)}
-      style={{
-        border: "none",
-        background: "#f3f1ed",
-        borderRadius: 8,
-        padding: "6px 10px",
-        cursor: "pointer",
-      }}
-    >
-      Copy
-    </button>
-  </div>
-  <div style={{ marginTop: 6 }}>{result.upsell}</div>
-</div>
-        </div>
-      )}
+)}
 
       {result && mode === "insight" && (
         <div style={cardStyle}>
