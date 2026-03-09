@@ -6,14 +6,37 @@ export const runtime = "nodejs";
 export async function POST(req) {
   try {
     const body = await req.json();
+    const mode = body?.mode ?? "sales";
     const text = body?.text ?? "";
     const photographer = body?.photographer ?? {};
 
     const city = String(photographer.city ?? "Unknown city");
-const style = String(photographer.style ?? "Documentary photography");
-const price = String(photographer.price ?? "");
-const toneRules = String(photographer.tone ?? "Warm, confident, human.");
-const languageMode = String(photographer.languageMode ?? "auto");
+    const style = String(photographer.style ?? "Documentary photography");
+    const price = String(photographer.price ?? "");
+    const toneRules = String(photographer.tone ?? "Warm, confident, human.");
+    const languageMode = String(photographer.languageMode ?? "auto");
+const personalVoice = `
+The photographer speaks like a calm father-photographer.
+Warm, grounded, calm, self-respecting.
+No fake enthusiasm.
+No pressure.
+No cliché sales phrases.
+No exaggerated positivity.
+
+Core ideas:
+- Real interaction matters more than perfect posing.
+- Mess can be memory.
+- Home does not need to look perfect.
+- Children should not be controlled too much.
+- Small imperfections often create emotional truth.
+- Documentary feeling is often stronger than visual perfection.
+
+Voice examples:
+- I usually begin calmly so the child can get used to me first.
+- Everyday home details often become the most valuable memory later.
+- If someone feels awkward, we simply do not force anything.
+- Natural movement usually gives stronger photographs than fixed posing.
+`;
 
     if (!process.env.OPENAI_API_KEY) {
       return Response.json(
@@ -33,11 +56,63 @@ const languageMode = String(photographer.languageMode ?? "auto");
         ? "Write replies in Russian."
         : languageMode === "en"
         ? "Write replies in English."
-        : "Write replies in the same language as the client message.";
+        : "Write replies in the same language as the user input.";
+
+    if (mode === "insight") {
+      const completion = await client.chat.completions.create({
+        model: "gpt-4.1-mini",
+        temperature: 0.3,
+        response_format: { type: "json_object" },
+        messages: [
+          {
+            role: "system",
+            content: `
+You are "PhotoOS AI — Client Insight" for photographers.
+
+Photographer profile:
+- City/market: ${city}
+- Style: ${style}
+- Typical price: ${price}
+- Tone rules: ${toneRules}
+
+Photographer personal voice:
+${personalVoice}
+
+Language rule:
+- ${languageRule}
+
+Analyze the client profile / notes and return STRICT JSON with exactly these keys:
+- client_type
+- shoot_style
+- location_idea
+- communication_tip
+- risk: one of ["low","medium","high"]
+- notes
+
+Rules:
+- Think like a photographer preparing for a real session.
+- Infer likely family dynamics, pace, comfort level, and visual style.
+- Suggest a shoot style that fits the client naturally.
+- Suggest one location idea, not a long list.
+- Communication tip should help the photographer guide the session calmly.
+- Keep it practical, specific, and human.
+- No markdown. No extra keys.
+            `.trim(),
+          },
+          {
+            role: "user",
+            content: `Client profile / notes:\n${text}`,
+          },
+        ],
+      });
+
+      const content = completion.choices?.[0]?.message?.content ?? "{}";
+      return Response.json(JSON.parse(content));
+    }
 
     const completion = await client.chat.completions.create({
       model: "gpt-4.1-mini",
-      temperature: 0.3,
+      temperature: 0.25,
       response_format: { type: "json_object" },
       messages: [
         {
@@ -51,6 +126,9 @@ Photographer profile:
 - Style: ${style}
 - Typical price: ${price}
 - Tone rules: ${toneRules}
+
+Photographer personal voice:
+${personalVoice}
 
 Language rule:
 - ${languageRule}
@@ -85,7 +163,10 @@ Rules:
 - No markdown. No extra keys.
           `.trim(),
         },
-        { role: "user", content: `Client message:\n${text}` },
+        {
+          role: "user",
+          content: `Client message:\n${text}`,
+        },
       ],
     });
 
