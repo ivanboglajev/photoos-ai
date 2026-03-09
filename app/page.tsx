@@ -138,10 +138,12 @@ export default function Home() {
 
       {result && (
         <div style={{ marginTop: 16, padding: 14, borderRadius: 12, border: "1px solid #ddd" }}>
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-            <span><b>Objection:</b> {result.objection_type}</span>
-            <span><b>Risk:</b> {result.risk}</span>
-          </div>
+         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+  <span><b>Objection:</b> {result.objection_type}</span>
+  <span><b>Tone:</b> {result.tone}</span>
+  <span><b>Strategy:</b> {result.strategy}</span>
+  <span><b>Risk:</b> {result.risk}</span>
+</div>
 
           <hr style={{ margin: "12px 0" }} />
 
