@@ -106,11 +106,11 @@ const modes: {
         }}
       >
         <h1 style={{ fontSize: 30, fontWeight: 700, marginBottom: 8 }}>
-          PhotoOS — AI assistant for photographers
-        </h1>
-        <p style={{ opacity: 0.7, color: "#4b4b4b" }}>
-          Understand clients. Prepare shoots. Protect your energy.
-        </p>
+          PhotoOS
+</h1>
+<p style={{ opacity: 0.75, color: "#4b4b4b", fontSize: 16 }}>
+  A second brain for photographers — replies, ideas, flow, clarity.
+</p>
       </div>
 
       <div
@@ -163,6 +163,9 @@ const modes: {
               </button>
             ))}
           </div>
+<p style={{ fontSize: 14, color: "#6f6a63", marginTop: 10 }}>
+  Choose a mode depending on what you need right now.
+</p>
         </div>
 
         <div
@@ -292,6 +295,7 @@ const modes: {
             Clear
           </button>
         </div>
+
       </div>
 
       {error && (
@@ -310,13 +314,19 @@ const modes: {
 
       {result && mode === "sales" && (
   <div style={cardStyle}>
-    <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 12 }}>
-      <span><b>Objection:</b> {result.objection_type}</span>
-      <span><b>Tone:</b> {result.tone}</span>
-      <span><b>Strategy:</b> {result.strategy}</span>
-      <span><b>Risk:</b> {result.risk}</span>
-    </div>
-
+    <div
+  style={{
+    display: "inline-block",
+    padding: "4px 10px",
+    borderRadius: 999,
+    background: "#f3f1ed",
+    fontSize: 12,
+    fontWeight: 600,
+    marginBottom: 14,
+  }}
+>
+  AI analysis ready
+</div>
     <div><b>Insight</b><br />{result.insight}</div>
 
     <br />
@@ -326,13 +336,14 @@ const modes: {
         <b>Reply (short)</b>
         <button
           onClick={() => copyText("reply_short", result.reply_short)}
-          style={{
-            border: "none",
-            background: "#f3f1ed",
-            borderRadius: 8,
-            padding: "6px 10px",
-            cursor: "pointer",
-          }}
+          sstyle={{
+  border: "1px solid #ddd",
+  background: "white",
+  borderRadius: 8,
+  padding: "6px 10px",
+  cursor: "pointer",
+  fontSize: 13,
+}}
         >
           {copiedKey === "reply_short" ? "Copied" : "Copy"}
         </button>
@@ -348,12 +359,13 @@ const modes: {
         <button
           onClick={() => copyText("reply_long", result.reply_long)}
           style={{
-            border: "none",
-            background: "#f3f1ed",
-            borderRadius: 8,
-            padding: "6px 10px",
-            cursor: "pointer",
-          }}
+  border: "1px solid #ddd",
+  background: "white",
+  borderRadius: 8,
+  padding: "6px 10px",
+  cursor: "pointer",
+  fontSize: 13,
+}}
         >
           {copiedKey === "reply_long" ? "Copied" : "Copy"}
         </button>
@@ -369,12 +381,13 @@ const modes: {
         <button
           onClick={() => copyText("upsell", result.upsell)}
           style={{
-            border: "none",
-            background: "#f3f1ed",
-            borderRadius: 8,
-            padding: "6px 10px",
-            cursor: "pointer",
-          }}
+  border: "1px solid #ddd",
+  background: "white",
+  borderRadius: 8,
+  padding: "6px 10px",
+  cursor: "pointer",
+  fontSize: 13,
+}}
         >
           {copiedKey === "upsell" ? "Copied" : "Copy"}
         </button>
