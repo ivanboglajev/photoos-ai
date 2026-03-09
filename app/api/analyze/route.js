@@ -4,10 +4,39 @@ export const runtime = "nodejs";
 
 export async function POST(req) {
   try {
-    const body = await req.json();
-    const mode = body?.mode ?? "sales";
-    const text = body?.text ?? "";
-    const photographer = body?.photographer ?? {};
+    const contentType = req.headers.get("content-type") || "";
+    const isMultipart = contentType.includes("multipart/form-data");
+
+    let mode = "sales";
+    let text = "";
+    let photographer = {};
+    let uploadedImageBase64 = null;
+    let uploadedImageMime = "image/png";
+
+    if (isMultipart) {
+      const form = await req.formData();
+      mode = String(form.get("mode") ?? "sales");
+
+      photographer = {
+        city: String(form.get("city") ?? ""),
+        style: String(form.get("style") ?? ""),
+        price: String(form.get("price") ?? ""),
+        tone: String(form.get("tone") ?? ""),
+        languageMode: String(form.get("languageMode") ?? "auto"),
+      };
+
+      const file = form.get("file");
+      if (file && typeof file !== "string") {
+        uploadedImageMime = file.type || "image/png";
+        const arrayBuffer = await file.arrayBuffer();
+        uploadedImageBase64 = Buffer.from(arrayBuffer).toString("base64");
+      }
+    } else {
+      const body = await req.json();
+      mode = body?.mode ?? "sales";
+      text = body?.text ?? "";
+      photographer = body?.photographer ?? {};
+    }
 
     const city = String(photographer.city ?? "Unknown city");
     const style = String(photographer.style ?? "Documentary photography");
@@ -40,13 +69,17 @@ Voice examples:
 
     if (!process.env.OPENAI_API_KEY) {
       return Response.json(
-        { error: "OPENAI_API_KEY is missing in .env.local" },
+        { error: "OPENAI_API_KEY is missing in environment variables" },
         { status: 500 }
       );
     }
 
-    if (!text || text.trim().length < 2) {
+    if (mode !== "screenshot" && (!text || text.trim().length < 2)) {
       return Response.json({ error: "Text is too short" }, { status: 400 });
+    }
+
+    if (mode === "screenshot" && !uploadedImageBase64) {
+      return Response.json({ error: "Screenshot file is missing" }, { status: 400 });
     }
 
     const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -56,7 +89,68 @@ Voice examples:
         ? "Write replies in Russian."
         : languageMode === "en"
         ? "Write replies in English."
-        : "Write replies in the same language as the user input.";
+        : "Write replies in the same language as the user input or screenshot.";
+
+    if (mode === "screenshot") {
+      const completion = await client.chat.completions.create({
+        model: "gpt-4.1-mini",
+        temperature: 0.3,
+        response_format: { type: "json_object" },
+        messages: [
+          {
+            role: "system",
+            content: `
+You are "PhotoOS AI — Screenshot Reader" for photographers.
+
+Photographer profile:
+- City/market: ${city}
+- Style: ${style}
+- Typical price: ${price}
+- Tone rules: ${toneRules}
+
+Photographer personal voice:
+${personalVoice}
+
+Language rule:
+- ${languageRule}
+
+Read the uploaded screenshot of a client conversation or price-related visual and return STRICT JSON with exactly these keys:
+- summary
+- client_tone
+- suggested_reply
+- suggested_reply_warm
+
+Rules:
+- Understand messy real-life screenshots as well as possible.
+- If the screenshot contains a conversation, summarize the client intent clearly.
+- If the screenshot contains pricing or offer information, use it as context.
+- suggested_reply = concise practical answer
+- suggested_reply_warm = slightly softer warmer answer
+- Keep answers human and useful.
+- No markdown. No extra keys.
+            `.trim(),
+          },
+          {
+            role: "user",
+            content: [
+              {
+                type: "text",
+                text: "Please analyze this screenshot and help the photographer continue the conversation.",
+              },
+              {
+                type: "image_url",
+                image_url: {
+                  url: `data:${uploadedImageMime};base64,${uploadedImageBase64}`,
+                },
+              },
+            ],
+          },
+        ],
+      });
+
+      const content = completion.choices?.[0]?.message?.content ?? "{}";
+      return Response.json(JSON.parse(content));
+    }
 
     if (mode === "insight") {
       const completion = await client.chat.completions.create({
@@ -247,7 +341,7 @@ Language rule:
 - ${languageRule}
 
 Return STRICT JSON with exactly these keys:
-- - must_have_frames = 3 short numbered must-have frames only
+- must_have_frames
 - first_frame
 - safe_frame
 - emotion_frame
@@ -264,9 +358,6 @@ Rules:
 - frame_to_try_last = more delicate frame when trust is already built.
 - Keep it practical, not abstract.
 - No markdown. No extra keys.
-- Separate multiple ideas clearly using numbered sentences.
-- Each field must read cleanly and not merge ideas together.
-- Use short structured phrases.
             `.trim(),
           },
           {

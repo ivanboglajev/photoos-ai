@@ -1,38 +1,63 @@
-
 "use client";
 
 import { useState } from "react";
 
+type Mode = "sales" | "insight" | "concept" | "flow" | "shotlist" | "screenshot";
+
 export default function Home() {
-  const [mode, setMode] = useState<"sales" | "insight" | "concept" | "flow" | "shotlist">("sales");
+  const [mode, setMode] = useState<Mode>("sales");
   const [text, setText] = useState("");
-const [copiedKey, setCopiedKey] = useState("");
+  const [copiedKey, setCopiedKey] = useState("");
 
   const [city, setCity] = useState("");
-const [style, setStyle] = useState("");
-const [price, setPrice] = useState("");
-const [tone, setTone] = useState("");
+  const [style, setStyle] = useState("");
+  const [price, setPrice] = useState("");
+  const [tone, setTone] = useState("");
   const [languageMode, setLanguageMode] = useState("auto");
+
+  const [file, setFile] = useState<File | null>(null);
 
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-    async function analyze() {
+  async function analyze() {
     setLoading(true);
     setResult(null);
     setError("");
 
     try {
-      const res = await fetch("/api/analyze", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          mode,
-          text,
-          photographer: { city, style, price, tone, languageMode },
-        }),
-      });
+      let res: Response;
+
+      if (mode === "screenshot") {
+        if (!file) {
+          throw new Error("Please upload a screenshot first.");
+        }
+
+        const formData = new FormData();
+        formData.append("mode", mode);
+        formData.append("file", file);
+        formData.append("city", city);
+        formData.append("style", style);
+        formData.append("price", price);
+        formData.append("tone", tone);
+        formData.append("languageMode", languageMode);
+
+        res = await fetch("/api/analyze", {
+          method: "POST",
+          body: formData,
+        });
+      } else {
+        res = await fetch("/api/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            mode,
+            text,
+            photographer: { city, style, price, tone, languageMode },
+          }),
+        });
+      }
 
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data?.details || data?.error || `HTTP ${res.status}`);
@@ -44,16 +69,17 @@ const [tone, setTone] = useState("");
     }
   }
 
-function copyText(key: string, value: string) {
-  if (!value || typeof navigator === "undefined" || !navigator.clipboard) return;
+  function copyText(key: string, value: string) {
+    if (!value || typeof navigator === "undefined" || !navigator.clipboard) return;
 
-  navigator.clipboard.writeText(value);
-  setCopiedKey(key);
+    navigator.clipboard.writeText(value);
+    setCopiedKey(key);
 
-  setTimeout(() => {
-    setCopiedKey((current) => (current === key ? "" : current));
-  }, 1500);
-}
+    setTimeout(() => {
+      setCopiedKey((current) => (current === key ? "" : current));
+    }, 1500);
+  }
+
   const fieldStyle = {
     width: "100%",
     marginTop: 6,
@@ -73,16 +99,15 @@ function copyText(key: string, value: string) {
     background: "white",
     boxShadow: "0 4px 20px rgba(0,0,0,0.04)",
   };
-const modes: {
-  key: "sales" | "insight" | "concept" | "flow" | "shotlist";
-  label: string;
-}[] = [
-  { key: "sales", label: "Sales Brain" },
-  { key: "insight", label: "Client Insight" },
-  { key: "concept", label: "Concept Generator" },
-  { key: "flow", label: "Session Flow" },
-  { key: "shotlist", label: "Shot List" },
-];
+
+  const modes: { key: Mode; label: string }[] = [
+    { key: "sales", label: "Sales Brain" },
+    { key: "insight", label: "Client Insight" },
+    { key: "concept", label: "Concept Generator" },
+    { key: "flow", label: "Session Flow" },
+    { key: "shotlist", label: "Shot List" },
+    { key: "screenshot", label: "Screenshot Reader" },
+  ];
 
   return (
     <main
@@ -106,11 +131,11 @@ const modes: {
         }}
       >
         <h1 style={{ fontSize: 30, fontWeight: 700, marginBottom: 8 }}>
-          PhotoOS
-</h1>
-<p style={{ opacity: 0.75, color: "#4b4b4b", fontSize: 16 }}>
-  A second brain for photographers — replies, ideas, flow, clarity.
-</p>
+          PhotoOS — AI assistant for photographers
+        </h1>
+        <p style={{ opacity: 0.7, color: "#4b4b4b" }}>
+          Understand clients. Prepare shoots. Protect your energy.
+        </p>
       </div>
 
       <div
@@ -138,13 +163,7 @@ const modes: {
               border: "1px solid #e6e2dc",
             }}
           >
-          {[
-  { key: "sales", label: "Sales Brain" },
-  { key: "insight", label: "Client Insight" },
-  { key: "concept", label: "Concept Generator" },
-  { key: "flow", label: "Session Flow" },
-  { key: "shotlist", label: "Shot List" },
-].map((item) => (
+            {modes.map((item) => (
               <button
                 key={item.key}
                 type="button"
@@ -163,9 +182,6 @@ const modes: {
               </button>
             ))}
           </div>
-<p style={{ fontSize: 14, color: "#6f6a63", marginTop: 10 }}>
-  Choose a mode depending on what you need right now.
-</p>
         </div>
 
         <div
@@ -179,47 +195,51 @@ const modes: {
           <div>
             <label style={{ fontWeight: 600, color: "#2a2a2a" }}>Market</label>
             <input
-  value={city}
-  onChange={(e) => setCity(e.target.value)}
-  placeholder="city, country or target audience"
-  style={fieldStyle}
-/>
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              placeholder="city, country or target audience"
+              style={fieldStyle}
+            />
           </div>
 
           <div>
             <label style={{ fontWeight: 600, color: "#2a2a2a" }}>Price</label>
             <input
-  value={price}
-  onChange={(e) => setPrice(e.target.value)}
-  placeholder="price per session / hour"
-  style={fieldStyle}
-/>
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+              placeholder="price per session / hour"
+              style={fieldStyle}
+            />
           </div>
 
           <div style={{ gridColumn: "1 / -1" }}>
             <label style={{ fontWeight: 600, color: "#2a2a2a" }}>Style</label>
             <input
-  value={style}
-  onChange={(e) => setStyle(e.target.value)}
-  placeholder="natural, editorial, documentary, studio..."
-  style={fieldStyle}
-/>
+              value={style}
+              onChange={(e) => setStyle(e.target.value)}
+              placeholder="natural, editorial, documentary, studio..."
+              style={fieldStyle}
+            />
           </div>
 
           <div style={{ gridColumn: "1 / -1" }}>
             <label style={{ fontWeight: 600, color: "#2a2a2a" }}>Tone rules</label>
             <textarea
-  value={tone}
-  onChange={(e) => setTone(e.target.value)}
-  rows={3}
-  placeholder="friendly, direct, emotional, minimal..."
-  style={fieldStyle}
-/>
+              value={tone}
+              onChange={(e) => setTone(e.target.value)}
+              rows={3}
+              placeholder="friendly, direct, emotional, minimal..."
+              style={fieldStyle}
+            />
           </div>
 
           <div>
             <label style={{ fontWeight: 600, color: "#2a2a2a" }}>Language</label>
-            <select value={languageMode} onChange={(e) => setLanguageMode(e.target.value)} style={fieldStyle}>
+            <select
+              value={languageMode}
+              onChange={(e) => setLanguageMode(e.target.value)}
+              style={fieldStyle}
+            >
               <option value="auto">Auto</option>
               <option value="ru">Russian</option>
               <option value="en">English</option>
@@ -227,45 +247,62 @@ const modes: {
           </div>
         </div>
 
-        <div style={{ marginTop: 16 }}>
-          <label style={{ fontWeight: 600, color: "#2a2a2a" }}>
-            {mode === "sales"
-              ? "Client message"
-              : mode === "insight"
-              ? "Client profile / notes"
-              : mode === "concept"
-              ? "Concept brief"
-              : mode === "flow"
-              ? "Session flow brief"
-              : "Shot list brief"}
-          </label>
+        {mode === "screenshot" ? (
+          <div style={{ marginTop: 16 }}>
+            <label style={{ fontWeight: 600, color: "#2a2a2a" }}>
+              Upload screenshot
+            </label>
+            <input
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+              style={{ ...fieldStyle, padding: 8 }}
+            />
+          </div>
+        ) : (
+          <div style={{ marginTop: 16 }}>
+            <label style={{ fontWeight: 600, color: "#2a2a2a" }}>
+              {mode === "sales"
+                ? "Client message"
+                : mode === "insight"
+                ? "Client profile / notes"
+                : mode === "concept"
+                ? "Concept brief"
+                : mode === "flow"
+                ? "Session flow brief"
+                : "Shot list brief"}
+            </label>
 
-  <textarea
-  value={text}
-  onChange={(e) => setText(e.target.value)}
-  rows={8}
-  placeholder={
-    mode === "sales"
-      ? "paste a client message"
-      : mode === "insight"
-      ? "describe the client or session briefly"
-      : mode === "concept"
-      ? "describe the shoot idea or family situation"
-      : mode === "flow"
-      ? "describe the session flow challenge"
-      : "describe the session for shot priorities"
-  }
-  style={{
-    ...fieldStyle,
-    padding: 12,
-  }}
-/>
-        </div>
+            <textarea
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              rows={8}
+              placeholder={
+                mode === "sales"
+                  ? "paste a client message"
+                  : mode === "insight"
+                  ? "describe the client or session briefly"
+                  : mode === "concept"
+                  ? "describe the shoot idea or family situation"
+                  : mode === "flow"
+                  ? "describe the session flow challenge"
+                  : "describe the session for shot priorities"
+              }
+              style={{
+                ...fieldStyle,
+                padding: 12,
+              }}
+            />
+          </div>
+        )}
 
         <div style={{ display: "flex", gap: 12, marginTop: 12 }}>
           <button
             onClick={analyze}
-            disabled={loading || text.trim().length < 2}
+            disabled={
+              loading ||
+              (mode === "screenshot" ? !file : text.trim().length < 2)
+            }
             style={{
               padding: "12px 18px",
               borderRadius: 12,
@@ -281,6 +318,7 @@ const modes: {
           <button
             onClick={() => {
               setText("");
+              setFile(null);
               setResult(null);
               setError("");
             }}
@@ -295,7 +333,6 @@ const modes: {
             Clear
           </button>
         </div>
-
       </div>
 
       {error && (
@@ -313,89 +350,79 @@ const modes: {
       )}
 
       {result && mode === "sales" && (
-  <div style={cardStyle}>
-    <div
-  style={{
-    display: "inline-block",
-    padding: "4px 10px",
-    borderRadius: 999,
-    background: "#f3f1ed",
-    fontSize: 12,
-    fontWeight: 600,
-    marginBottom: 14,
-  }}
->
-  AI analysis ready
-</div>
-    <div><b>Insight</b><br />{result.insight}</div>
+        <div style={cardStyle}>
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 12 }}>
+            <span><b>Objection:</b> {result.objection_type}</span>
+            <span><b>Tone:</b> {result.tone}</span>
+            <span><b>Strategy:</b> {result.strategy}</span>
+            <span><b>Risk:</b> {result.risk}</span>
+          </div>
 
-    <br />
+          <div><b>Insight</b><br />{result.insight}</div>
+          <br />
 
-    <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <b>Reply (short)</b>
-        <button
-          onClick={() => copyText("reply_short", result.reply_short)}
-          sstyle={{
-  border: "1px solid #ddd",
-  background: "white",
-  borderRadius: 8,
-  padding: "6px 10px",
-  cursor: "pointer",
-  fontSize: 13,
-}}
-        >
-          {copiedKey === "reply_short" ? "Copied" : "Copy"}
-        </button>
-      </div>
-      <div style={{ marginTop: 6 }}>{result.reply_short}</div>
-    </div>
+          <div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <b>Reply (short)</b>
+              <button
+                onClick={() => copyText("reply_short", result.reply_short)}
+                style={{
+                  border: "none",
+                  background: "#f3f1ed",
+                  borderRadius: 8,
+                  padding: "6px 10px",
+                  cursor: "pointer",
+                }}
+              >
+                {copiedKey === "reply_short" ? "Copied" : "Copy"}
+              </button>
+            </div>
+            <div style={{ marginTop: 6 }}>{result.reply_short}</div>
+          </div>
 
-    <br />
+          <br />
 
-    <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <b>Reply (long)</b>
-        <button
-          onClick={() => copyText("reply_long", result.reply_long)}
-          style={{
-  border: "1px solid #ddd",
-  background: "white",
-  borderRadius: 8,
-  padding: "6px 10px",
-  cursor: "pointer",
-  fontSize: 13,
-}}
-        >
-          {copiedKey === "reply_long" ? "Copied" : "Copy"}
-        </button>
-      </div>
-      <div style={{ marginTop: 6 }}>{result.reply_long}</div>
-    </div>
+          <div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <b>Reply (long)</b>
+              <button
+                onClick={() => copyText("reply_long", result.reply_long)}
+                style={{
+                  border: "none",
+                  background: "#f3f1ed",
+                  borderRadius: 8,
+                  padding: "6px 10px",
+                  cursor: "pointer",
+                }}
+              >
+                {copiedKey === "reply_long" ? "Copied" : "Copy"}
+              </button>
+            </div>
+            <div style={{ marginTop: 6 }}>{result.reply_long}</div>
+          </div>
 
-    <br />
+          <br />
 
-    <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <b>Upsell</b>
-        <button
-          onClick={() => copyText("upsell", result.upsell)}
-          style={{
-  border: "1px solid #ddd",
-  background: "white",
-  borderRadius: 8,
-  padding: "6px 10px",
-  cursor: "pointer",
-  fontSize: 13,
-}}
-        >
-          {copiedKey === "upsell" ? "Copied" : "Copy"}
-        </button>
-      </div>
-      <div style={{ marginTop: 6 }}>{result.upsell}</div>
-    </div>
-  </div>
-)}
+          <div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <b>Upsell</b>
+              <button
+                onClick={() => copyText("upsell", result.upsell)}
+                style={{
+                  border: "none",
+                  background: "#f3f1ed",
+                  borderRadius: 8,
+                  padding: "6px 10px",
+                  cursor: "pointer",
+                }}
+              >
+                {copiedKey === "upsell" ? "Copied" : "Copy"}
+              </button>
+            </div>
+            <div style={{ marginTop: 6 }}>{result.upsell}</div>
+          </div>
+        </div>
+      )}
 
       {result && mode === "insight" && (
         <div style={cardStyle}>
@@ -464,6 +491,52 @@ const modes: {
           <div><b>Detail frame</b><br />{result.detail_frame}</div>
           <br />
           <div><b>Frame to try last</b><br />{result.frame_to_try_last}</div>
+        </div>
+      )}
+
+      {result && mode === "screenshot" && (
+        <div style={cardStyle}>
+          <div><b>Summary</b><br />{result.summary}</div>
+          <br />
+          <div><b>Client tone</b><br />{result.client_tone}</div>
+          <br />
+          <div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <b>Suggested reply</b>
+              <button
+                onClick={() => copyText("screenshot_reply", result.suggested_reply)}
+                style={{
+                  border: "none",
+                  background: "#f3f1ed",
+                  borderRadius: 8,
+                  padding: "6px 10px",
+                  cursor: "pointer",
+                }}
+              >
+                {copiedKey === "screenshot_reply" ? "Copied" : "Copy"}
+              </button>
+            </div>
+            <div style={{ marginTop: 6 }}>{result.suggested_reply}</div>
+          </div>
+          <br />
+          <div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <b>Warm reply</b>
+              <button
+                onClick={() => copyText("screenshot_reply_warm", result.suggested_reply_warm)}
+                style={{
+                  border: "none",
+                  background: "#f3f1ed",
+                  borderRadius: 8,
+                  padding: "6px 10px",
+                  cursor: "pointer",
+                }}
+              >
+                {copiedKey === "screenshot_reply_warm" ? "Copied" : "Copy"}
+              </button>
+            </div>
+            <div style={{ marginTop: 6 }}>{result.suggested_reply_warm}</div>
+          </div>
         </div>
       )}
     </main>
